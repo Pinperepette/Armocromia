@@ -15,3 +15,9 @@ On macOS, you can use the following command if you're using Homebrew:
 ```bash
 brew install libsixel
 ```
+## Running the Script
+After installing all the dependencies, you can run the script with the following command:
+```bash
+python armocromia.py path_to_your_image
+
+```
