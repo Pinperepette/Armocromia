@@ -23,3 +23,4 @@ After installing all the dependencies, you can run the script with the following
 python armocromia.py path_to_your_image
 
 ```
+<img src="image.png">
