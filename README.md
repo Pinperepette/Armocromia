@@ -9,6 +9,10 @@ To run the script, you need to install the required dependencies using the follo
 ```bash
 pip install -r requirements.txt
 ```
+## Terminal Emulator Requirements
+
+This script requires a terminal emulator that supports Sixel graphics, such as iTerm2 for macOS. Before running the script, ensure that you have a compatible terminal emulator installed on your system. For iTerm2 on macOS, you can download it from the official website: https://iterm2.com/
+
 Additionally, you need to install img2sixel using your operating system's package manager. For example, on Debian/Ubuntu, you can use the following command:
 ```bash
 sudo apt-get install libsixel-bin
