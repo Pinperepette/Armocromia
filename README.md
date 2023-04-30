@@ -1,5 +1,7 @@
 # Armocromia
-Your personal color consultant
+Your personal color consultant:
+Yo, nowadays people be needing an armocromia expert, but you know the costs be sky high... that's where the idea of a free virtual one comes in, giving everyone the chance to be happy and look fly in the perfect color.
+
 ## Installing Dependencies
 
 To run the script, you need to install the required dependencies using the following command:
