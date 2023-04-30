@@ -9,20 +9,35 @@ import io
 import subprocess
 import sys
 import os
+from skimage.color import deltaE_ciede2000
 
 def import_image(file_path):
-    image = cv2.imread(file_path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    return image
+    try:
+        pil_image = Image.open(file_path)
+        image = np.array(pil_image)
+
+        if len(image.shape) == 2:
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        else:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        return image
+    except Exception as e:
+        print(f"Error: Could not read image from {file_path}: {e}")
+        return None
 
 def resize_image(image, height=600, length=400):
     return cv2.resize(image, (length, height), interpolation=cv2.INTER_AREA)
 
-def get_main_color(image, k=5):
-    image_resize = resize_image(image)
-    image_reshape = image_resize.reshape(image_resize.shape[0] * image_resize.shape[1], 3)
+def random_sample(image, sample_size=1000):
+    h, w, _ = image.shape
+    indices = np.random.choice(h * w, sample_size)
+    sampled_pixels = image.reshape(-1, 3)[indices]
+    return sampled_pixels
+
+def get_main_color(image, k=5, sample_size=1000):
+    sampled_pixels = random_sample(image, sample_size)
     kmeans = KMeans(n_clusters=k)
-    kmeans.fit(image_reshape)
+    kmeans.fit(sampled_pixels)
     colors_principali = kmeans.cluster_centers_
     return colors_principali
 
@@ -36,15 +51,16 @@ def armocromia_adatta(image):
     }
     distanze = {}
     for armocromia, color in armocromie.items():
-        color_rgb = np.array(color).reshape(1, 1, 3)
-        color_lab = rgb2lab(color_rgb)
-        colors_principali_lab = rgb2lab(colors.reshape(-1, 1, 3))
-        distanze[armocromia] = np.mean([deltaE_cie76(color_lab, c_lab) for c_lab in colors_principali_lab])
+        color_rgb = np.array(color).reshape(1, 1, 3).astype(np.float64) 
+        color_lab = rgb2lab(color_rgb)[0][0]
+        colors_principali_rgb = colors.reshape(-1, 1, 3).astype(np.float64)
+        colors_principali_lab = rgb2lab(colors_principali_rgb).reshape(-1, 3)
+        distanze[armocromia] = np.mean([deltaE_ciede2000(color_lab, c_lab) for c_lab in colors_principali_lab])
     armocromia_adatta = min(distanze, key=distanze.get)
     return armocromia_adatta
 
 def show_image(image, titolo=''):
-    pil_image = Image.fromarray(image)
+    pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
     with io.BytesIO() as output:
         pil_image.save(output, format="PNG")
         img_data = output.getvalue()
@@ -55,7 +71,7 @@ def show_image(image, titolo=''):
         subprocess.run(["img2sixel", "temp_image.png"])
     else:
         subprocess.run(["open", "temp_image.png"])
-        
+
 def show_palette(armocromia):
     palette_colors = {
         "autunno": [
@@ -105,8 +121,8 @@ def show_palette(armocromia):
 if __name__ == "__main__":
     file_path = sys.argv[1]
     image = import_image(file_path)
+    image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
     armocromia = armocromia_adatta(image)
     print(f"The most suitable color analysis for the image {file_path} is: {armocromia}\n")
     show_image(image)
     show_palette(armocromia)
-
