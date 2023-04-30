@@ -8,6 +8,7 @@ from PIL import Image
 import io
 import subprocess
 import sys
+import os
 
 def import_image(file_path):
     image = cv2.imread(file_path)
@@ -49,8 +50,12 @@ def show_image(image, titolo=''):
         img_data = output.getvalue()
     with open("temp_image.png", "wb") as f:
         f.write(img_data)
-    subprocess.run(["img2sixel", "temp_image.png"])
-
+    term = os.getenv('TERM')
+    if term == 'xterm-256color':
+        subprocess.run(["img2sixel", "temp_image.png"])
+    else:
+        subprocess.run(["open", "temp_image.png"])
+        
 def show_palette(armocromia):
     palette_colors = {
         "autunno": [
